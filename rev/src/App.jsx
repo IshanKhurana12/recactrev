@@ -1,33 +1,71 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-
+import { createContext, useContext, useEffect, useState } from 'react'
+import "./App.css"
+import { useReducer } from 'react';
+import Postreducer from './Postreducer';
+import Color from './Color';
+export const colorContext=createContext()
 function App() {
-  const [count, setCount] = useState(0)
+
+  const [posts,dispatch]=useReducer(Postreducer,[]);
+
+  const [color,setcolor]=useState("");
+  useEffect(()=>{
+  async function getdata(){
+      try {
+          const result= await fetch("https://jsonplaceholder.typicode.com/posts").then((res)=>{
+           return res.json()
+          })
+       
+          if(result){
+           dispatch({type:"setdata",data:result})
+          }
+     
+      } catch (error) {
+          console.log(error)
+      }
+    }
+    getdata();
+  },[])
+const increase=()=>{
+  setCount(count+1);
+}
+
+
+
+
+
+const removepost=(id)=>{
+  console.log("remove");
+dispatch({type:"remove",index:id});
+
+}
+
+
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+<div className='center'>
+
+
+
+    <div className='container'>
+    <input type='color' onChange={(e)=>(setcolor(e.target.value))} />
+    <colorContext.Provider value={{color,setcolor}}>
+      <Color />
+    </colorContext.Provider>
+    <div>
+      {posts ? (posts.map((post,id)=>{
+         return <div onClick={()=>removepost(post.id)} className="box" key={id}>
+         <p>{post.id}</p>
+            <h1>{post.title}</h1>
+            <h5>{post.body}</h5>
+          </div>
+      })): <h1>loading...</h1>}
+    </div>
+    </div>
+    </div>
+   
+ 
     </>
   )
 }
